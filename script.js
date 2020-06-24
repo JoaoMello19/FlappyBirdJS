@@ -1,10 +1,17 @@
 console.log('[JoaoMello] Flappy Bird')
 
+const hitSound = new Audio()
+hitSound.src = "sound/hit.wav"
+
 const sprites = new Image()
 sprites.src = 'images/sprites.png'
 
 const canvas = document.querySelector('canvas')
 const context = canvas.getContext('2d')
+
+let currentScreen = {}
+
+const vGlobal = {}
 
 const background = {
 	spriteX: 390,
@@ -63,32 +70,6 @@ const floor = {
 	}
 }
 
-const flappyBird = {
-	spriteX: 0,
-	spriteY: 0,
-	width: 33,
-	height: 24,
-	x: 10,
-	y: 50,
-	speed: 0,
-	gravity: 0.25,
-
-	draw() {
-		context.drawImage(
-			sprites,
-			flappyBird.spriteX, flappyBird.spriteY, // Sprite X, Sprite Y
-			flappyBird.width, flappyBird.height, // Tamanho do recorte na sprite
-			flappyBird.x, flappyBird.y,
-			flappyBird.width, flappyBird.height,
-		)
-	},
-
-	update() {
-		flappyBird.speed += flappyBird.gravity
-		flappyBird.y += flappyBird.speed
-	}
-}
-
 const getReadyMessage = {
 	spriteX: 134,
 	spriteY: 0,
@@ -110,10 +91,14 @@ const getReadyMessage = {
 
 const screens = {
 	START: {
+		init() {
+			vGlobal.flappyBird = newFlappyBird()
+		},
+
 		draw() {
 			background.draw()
 			floor.draw()
-			flappyBird.draw()
+			vGlobal.flappyBird.draw()
 			getReadyMessage.draw()
 		},
 
@@ -130,19 +115,71 @@ const screens = {
 		draw() {
 			background.draw()
 			floor.draw()
-			flappyBird.draw()
+			vGlobal.flappyBird.draw()
 		},
 		
 		update() {
-			flappyBird.update()
+			vGlobal.flappyBird.update()
+		},
+
+		click() {
+			vGlobal.flappyBird.jump()
 		}
 	}
 }
 
-let currentScreen = {}
+function newFlappyBird() {
+	const flappyBird = {
+		spriteX: 0,
+		spriteY: 0,
+		width: 33,
+		height: 24,
+		x: 10,
+		y: 50,
+		speed: 0,
+		gravity: 0.25,
+		jumpValue: 4.6,
+	
+		draw() {
+			context.drawImage(
+				sprites,
+				flappyBird.spriteX, flappyBird.spriteY, // Sprite X, Sprite Y
+				flappyBird.width, flappyBird.height, // Tamanho do recorte na sprite
+				flappyBird.x, flappyBird.y,
+				flappyBird.width, flappyBird.height,
+			)
+		},
+	
+		update() {
+			if(colision(flappyBird, floor)) {
+				console.log('Fez colisão')
+				hitSound.play()
+				setTimeout(()=>{
+					switchScreen(screens.START)
+				}, 500)
+				return
+			}
+	
+			flappyBird.speed += flappyBird.gravity
+			flappyBird.y += flappyBird.speed
+		},
+	
+		jump() {
+			flappyBird.speed = -flappyBird.jumpValue 
+		}
+	}
+
+	return flappyBird
+}
+
+function colision(elem1, elem2) {
+	return (elem1.y + elem1.height >= elem2.y)
+}
 
 function switchScreen(newScreen) {
 	currentScreen = newScreen
+	if(currentScreen.init)
+	currentScreen.init()
 }
 
 function loop() {
