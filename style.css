@@ -1,13 +1,39 @@
 body {
 	background-color: #555;
-	min-height: 100vh;
 	display: flex;
-	justify-content: center;
-	align-items: center;
+	flex-direction: column;
+	font-family: 'Quicksand', sans-serif;
+}
+
+#title {
+	width: fit-content;
+	margin: 0 auto;
+}
+
+.title-text {
+	padding: 0;
+	margin: 0;
+}
+
+#game-name {
+	margin-top: 10px;
+}
+
+h2 {
+	text-align: right;
+	font-size: 1em;
+	font-style: italic;
 }
 
 canvas {
 	border: 2px solid #000000;
 	display: block;
+	margin: 30px auto;
+	cursor: pointer;
+}
+
+footer {
+	font-weight: bold;
+	width: fit-content;
 	margin: 0 auto;
 }
