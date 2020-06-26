@@ -9,6 +9,8 @@ sprites.src = 'images/sprites.png'
 const canvas = document.querySelector('canvas')
 const context = canvas.getContext('2d')
 
+let STOPPED = false
+
 let currentScreen = {}
 
 const vGlobal = {}
@@ -197,10 +199,11 @@ function newPipes() {
 
 		}, 
 		colisionWithBird(pair) {
+			const V_ERROR = 5
 			if(vGlobal.flappyBird.x + vGlobal.flappyBird.width >= pair.x) {
-				if(vGlobal.flappyBird.y <= pair.topPipe.y)
+				if(vGlobal.flappyBird.y + V_ERROR <= pair.topPipe.y)
 					return true
-				else if(vGlobal.flappyBird.y + vGlobal.flappyBird.height >= pair.bottomPipe.y)
+				else if(vGlobal.flappyBird.y + vGlobal.flappyBird.height - V_ERROR >= pair.bottomPipe.y)
 					return true
 			}
 
@@ -221,7 +224,11 @@ function newPipes() {
 					if(this.colisionWithBird(pair)) {
 						console.log('Perdeste')
 						hitSound.play()
+						STOPPED = true
+						setTimeout(()=>{
+							STOPPED = false
 							switchScreen(screens.START)
+						}, 500)
 						return
 					}
 
@@ -243,7 +250,7 @@ function newFlappyBird() {
 		x: 10,
 		y: 50,
 		speed: 0,
-		gravity: 0.25,
+		gravity: 0.2,
 		jumpValue: 4.6,
 		movements: [
 			{spriteX: 0, spriteY: 0},
@@ -269,7 +276,9 @@ function newFlappyBird() {
 			if(colision(flappyBird, vGlobal.floor)) {
 				console.log('Fez colisão')
 				hitSound.play()
+				STOPPED = true
 				setTimeout(()=>{
+					STOPPED = false
 					switchScreen(screens.START)
 				}, 500)
 				return
@@ -305,8 +314,10 @@ function switchScreen(newScreen) {
 }
 
 function loop() {
-	currentScreen.draw()
-	currentScreen.update()
+	if(!STOPPED) {
+		currentScreen.draw()
+		currentScreen.update()
+	}
 	
 	frames++
 	requestAnimationFrame(loop)

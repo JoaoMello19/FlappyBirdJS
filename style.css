@@ -3,6 +3,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	font-family: 'Quicksand', sans-serif;
+	color: #FFF;
 }
 
 #title {
@@ -30,6 +31,10 @@ canvas {
 	display: block;
 	margin: 30px auto;
 	cursor: pointer;
+}
+
+canvas:focus {
+	outline-style: none;
 }
 
 footer {
