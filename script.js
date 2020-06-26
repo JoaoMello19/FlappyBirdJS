@@ -69,14 +69,14 @@ const screens = {
 		init() {
 			vGlobal.flappyBird = newFlappyBird()
 			vGlobal.floor = newFloor()
-			vGlobal.pipes = 0
+			vGlobal.pipes = newPipes()
 		},
 
 		draw() {
 			background.draw()
 			vGlobal.floor.draw()
-			vGlobal.flappyBird.draw()
-			// getReadyMessage.draw()
+			vGlobal.flappyBird.draw()		
+			getReadyMessage.draw()
 		},
 
 		update() {
@@ -91,12 +91,15 @@ const screens = {
 	GAME: {
 		draw() {
 			background.draw()
+			vGlobal.pipes.draw()
 			vGlobal.floor.draw()
 			vGlobal.flappyBird.draw()
 		},
 		
 		update() {
 			vGlobal.flappyBird.update()
+			vGlobal.floor.update()
+			vGlobal.pipes.update()
 		},
 
 		click() {
@@ -139,6 +142,96 @@ function newFloor() {
 	}
 
 	return floor
+}
+
+function newPipes() {
+	const pipes = {
+		width: 52,
+		height: 400,
+		bottom: {
+			spriteX: 0,
+			spriteY: 169
+		},
+		top: {
+			spriteX: 52,
+			spriteY: 169
+		},
+		gap: 80,
+
+		draw() {			
+			pipes.pairs.forEach((pair)=> {
+				const yRandom = pair.y
+				const gapBetween = 90
+				// cano de cima
+				const topPipeX = pair.x
+				const topPipeY = yRandom
+				context.drawImage(
+					sprites,
+					pipes.top.spriteX, pipes.top.spriteY,
+					pipes.width, pipes.height,
+					topPipeX, topPipeY,
+					pipes.width, pipes.height
+				)
+	
+				// cano de baixo
+				const bottomPipeX = pair.x
+				const bottomPipeY = pipes.height + gapBetween + yRandom
+				context.drawImage(
+					sprites,
+					pipes.bottom.spriteX, pipes.bottom.spriteY,
+					pipes.width, pipes.height,
+					bottomPipeX, bottomPipeY,
+					pipes.width, pipes.height
+				)
+
+				pair.topPipe = {
+					x: topPipeX,
+					y: topPipeY + pipes.height
+				}
+
+				pair.bottomPipe = {
+					x: bottomPipeX,
+					y: bottomPipeY
+				}
+			})
+
+		}, 
+		colisionWithBird(pair) {
+			if(vGlobal.flappyBird.x + vGlobal.flappyBird.width >= pair.x) {
+				if(vGlobal.flappyBird.y <= pair.topPipe.y)
+					return true
+				else if(vGlobal.flappyBird.y + vGlobal.flappyBird.height >= pair.bottomPipe.y)
+					return true
+			}
+
+			return false
+		},
+
+		pairs: [],
+		update() {
+			if(frames % 100 == 0)
+				pipes.pairs.push({
+					x: canvas.width, 
+					y: -150 * (Math.random() + 1) 
+				})
+			
+				pipes.pairs.forEach((pair)=> {
+					pair.x -= 2
+
+					if(this.colisionWithBird(pair)) {
+						console.log('Perdeste')
+						hitSound.play()
+							switchScreen(screens.START)
+						return
+					}
+
+					if(pair.x <= -pipes.width)
+						pipes.pairs.shift()
+				})
+		}
+	}
+
+	return pipes
 }
 
 function newFlappyBird() {
